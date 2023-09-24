@@ -170,6 +170,16 @@ namespace MatrixC
             return _table[rowNumber];
         }
 
+        Matrix Transpose() const noexcept
+        {
+            Matrix result(_columnCount, _rowCount);
+            for (std::size_t i = 0; i < _rowCount; ++i)
+                for (std::size_t j = 0; j < _columnCount; ++j)
+                    result[j][i] = _table[i][j];
+
+            return std::move(result);
+        }
+
         void EraseRow(std::size_t rowNumber)
         {
             if (_rowCount == 1)
