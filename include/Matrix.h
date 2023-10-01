@@ -49,6 +49,42 @@ namespace MatrixC
                 _table[i] = std::move(matrix[i]);
         }
 
+        explicit Matrix(const std::vector<std::vector<T>>& matrix)
+        {
+            if (matrix.empty() || matrix[0].empty())
+                throw std::invalid_argument("matrix must not be empty");
+
+            _rowCount = matrix.size();
+            _columnCount = matrix[0].size();
+
+            _table.resize(_rowCount);
+            for (std::size_t i = 0; i < _rowCount; ++i)
+            {
+                _table[i].resize(_columnCount);
+                for (std::size_t j = 0; j < _columnCount; ++j)
+                {
+                    if (matrix[i].size() != _columnCount)
+                        throw std::invalid_argument("matrix must be a rectangle");
+                    _table[i][j] = matrix[i][j];
+                }
+            }
+        }
+
+        explicit Matrix(std::vector<std::vector<T>>&& matrix)
+        {
+            if (matrix.empty() || matrix[0].empty())
+                throw std::invalid_argument("matrix must not be empty");
+
+            _rowCount = matrix.size();
+            _columnCount = matrix[0].size();
+
+            for (std::size_t i = 0; i < _rowCount; ++i)
+                if (matrix[i].size() != _columnCount)
+                    throw std::invalid_argument("matrix must be a rectangle");
+
+            _table = matrix;
+        }
+
         ~Matrix() noexcept = default;
 
         Matrix& operator=(const Matrix& matrix) noexcept
@@ -73,6 +109,42 @@ namespace MatrixC
                 _table[i] = std::move(matrix[i]);
 
             return *this;
+        }
+
+        Matrix& operator=(const std::vector<std::vector<T>>& matrix)
+        {
+            if (matrix.empty() || matrix[0].empty())
+                throw std::invalid_argument("matrix must not be empty");
+
+            _rowCount = matrix.size();
+            _columnCount = matrix[0].size();
+
+            _table.resize(_rowCount);
+            for (std::size_t i = 0; i < _rowCount; ++i)
+            {
+                _table[i].resize(_columnCount);
+                for (std::size_t j = 0; j < _columnCount; ++j)
+                {
+                    if (matrix[i].size() != _columnCount)
+                        throw std::invalid_argument("matrix must be a rectangle");
+                    _table[i][j] = matrix[i][j];
+                }
+            }
+        }
+
+        Matrix& operator=(std::vector<std::vector<T>>&& matrix)
+        {
+            if (matrix.empty() || matrix[0].empty())
+                throw std::invalid_argument("matrix must not be empty");
+
+            _rowCount = matrix.size();
+            _columnCount = matrix[0].size();
+
+            for (std::size_t i = 0; i < _rowCount; ++i)
+                if (matrix[i].size() != _columnCount)
+                    throw std::invalid_argument("matrix must be a rectangle");
+
+            _table = matrix;
         }
 
         bool operator==(const Matrix& matrix) const noexcept
@@ -165,7 +237,7 @@ namespace MatrixC
             return std::move(result);
         }
 
-        std::vector<T>& operator[](std::size_t rowNumber)
+        std::vector<T>& operator[](std::size_t rowNumber) noexcept
         {
             return _table[rowNumber];
         }
@@ -239,12 +311,26 @@ namespace MatrixC
             return std::move(inverseMatrix);
         }
 
-        void SwapRow(std::size_t row1Number, std::size_t row2Number)
+        Matrix operator~() const
+        {
+            return Inverse();
+        }
+
+        Matrix operator-() const noexcept
+        {
+            Matrix copy = Matrix(*this);
+            for (std::size_t i = 0; i < _rowCount; ++i)
+                for (std::size_t j = 0; j < _columnCount; ++j)
+                    copy[i][j] = -copy[i][j];
+            return std::move(copy);
+        }
+
+        void SwapRow(std::size_t row1Number, std::size_t row2Number) noexcept
         {
             std::swap(_table[row1Number], _table[row2Number]);
         }
 
-        void SwapColumn(std::size_t column1Number, std::size_t column2Number)
+        void SwapColumn(std::size_t column1Number, std::size_t column2Number) noexcept
         {
             for (std::size_t i = 0; i < _rowCount; ++i)
                 std::swap(_table[i][column1Number], _table[i][column2Number]);
@@ -302,7 +388,7 @@ namespace MatrixC
             return _columnCount;
         }
 
-        std::vector<T> GetRow(std::size_t rowNumber) const
+        std::vector<T> GetRow(std::size_t rowNumber) const noexcept
         {
             return _table[rowNumber];
         }
@@ -323,7 +409,7 @@ namespace MatrixC
             _table[rowNumber] = newRow;
         }
 
-        std::vector<T> GetColumn(std::size_t columnNumber) const
+        std::vector<T> GetColumn(std::size_t columnNumber) const noexcept
         {
             std::vector<T> column(_rowCount);
             for (std::size_t i = 0; i < _rowCount; ++i)
@@ -349,17 +435,17 @@ namespace MatrixC
                 _table[i][columnNumber] = std::move(newColumn[i]);
         }
 
-        inline T GetElement(std::size_t i, std::size_t j) const
+        inline T GetElement(std::size_t i, std::size_t j) const noexcept
         {
             return _table[i][j];
         }
 
-        inline void SetElement(const T& newValue, std::size_t i, std::size_t j)
+        inline void SetElement(const T& newValue, std::size_t i, std::size_t j) noexcept
         {
             _table[i][j] = newValue;
         }
 
-        inline void SetElement(T&& newValue, std::size_t i, std::size_t j)
+        inline void SetElement(T&& newValue, std::size_t i, std::size_t j) noexcept
         {
             _table[i][j] = newValue;
         }
@@ -391,23 +477,22 @@ namespace MatrixC
             return std::move(matrixString);
         }
     };
+
+    typedef MatrixC::Matrix<std::double_t> MatrixD;
+    typedef MatrixC::Matrix<std::float_t> MatrixF;
+    typedef MatrixC::Matrix<std::int64_t> MatrixL;
+    typedef MatrixC::Matrix<std::int32_t> MatrixI;
+    typedef MatrixC::Matrix<std::int16_t> MatrixS;
+    typedef MatrixC::Matrix<std::int8_t> MatrixB;
+
+    #define ZERO_MATRIX(rowCount, columnCount) \
+    return MatrixD(rowCount, columnCount);
+
+    #define E_MATRIX(rowCount, columnCount) \
+    MatrixD matrix(rowCount, columnCount); \
+    for (std::size_t i = 0, j = 0; i < rowCount && j < columnCount; ++i, ++j) \
+        matrix[i][j] = 1; \
+    return matrix;
 }
-
-typedef MatrixC::Matrix<std::double_t> Matrix;
-typedef MatrixC::Matrix<std::double_t> MatrixD;
-typedef MatrixC::Matrix<std::float_t> MatrixF;
-typedef MatrixC::Matrix<std::int64_t> MatrixL;
-typedef MatrixC::Matrix<std::int32_t> MatrixI;
-typedef MatrixC::Matrix<std::int16_t> MatrixS;
-typedef MatrixC::Matrix<std::int8_t> MatrixB;
-
-#define ZERO_MATRIX(rowCount, columnCount) \
-return MatrixD(rowCount, columnCount);
-
-#define E_MATRIX(rowCount, columnCount) \
-MatrixD matrix(rowCount, columnCount); \
-for (std::size_t i = 0, j = 0; i < rowCount && j < columnCount; ++i, ++j) \
-    matrix[i][j] = 1; \
-return matrix;
 
 #endif

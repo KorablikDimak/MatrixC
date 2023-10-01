@@ -2,6 +2,8 @@
 
 #include "Matrix.h"
 
+typedef MatrixC::MatrixD Matrix;
+
 TEST(MatrixTests, SumMatrixTest)
 {
     // Average
