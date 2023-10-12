@@ -242,6 +242,11 @@ namespace MatrixC
             return _table[rowNumber];
         }
 
+        T& operator[](std::size_t rowNumber, std::size_t columnNumber) noexcept
+        {
+            return _table[rowNumber][columnNumber];
+        }
+
         Matrix Transpose() const noexcept
         {
             Matrix result(_columnCount, _rowCount);
